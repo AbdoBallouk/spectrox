@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpectroX — Advanced RF Spectrum Analyzer (HackRF / PlutoSDR)</title>
+<meta name="description" content="SpectroX — professional RF spectrum analyzer. 1 MHz–7.25 GHz, HackRF/PlutoSDR backends, live waterfall, FM demodulator, IQ recorder (SigMF), signal library, power meter, smart monitoring and web control.">
+<meta property="og:title" content="SpectroX — Advanced RF Spectrum Analyzer">
+<meta property="og:description" content="Professional RF spectrum analysis on HackRF & PlutoSDR: waterfall, demodulator, IQ recorder, signal library, power meter, smart monitoring, web control.">
+<meta property="og:image" content="assets/main-picture-spectrum.png">
+<meta name="theme-color" content="#070b16">
+<link rel="icon" href="assets/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b16; --panel:#0c1322; --panel2:#101a30; --line:#1c2a44;
+  --text:#e6edf7; --muted:#8fa3c4; --cyan:#22d3ee; --emerald:#10b981;
+  --amber:#f59e0b; --red:#ef4444; --violet:#8b5cf6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  line-height:1.6;overflow-x:hidden;
+  -webkit-user-select:none;user-select:none;
+}
+input,select,textarea{ -webkit-user-select:text;user-select:text }
+img{ -webkit-user-drag:none;user-select:none }
+::selection{ background:rgba(34,211,238,.25) }
+a{color:var(--cyan);text-decoration:none}
+[dir="rtl"] body{font-family:'Inter','Segoe UI',system-ui,sans-serif}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block;font-family:'JetBrains Mono',monospace}
+.mono{font-family:'JetBrains Mono',monospace}
+
+canvas{display:block;max-width:100%}
+
+/* ---------- Nav ---------- */
+nav{
+  position:sticky;top:0;z-index:60;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 1.4rem;
+  background:rgba(7,11,22,.82);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:700;letter-spacing:.5px}
+.brand .logo{width:34px;height:34px;flex:none}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:.7rem;letter-spacing:2.5px}
+nav .links{display:flex;gap:1.2rem;font-size:.9rem;color:var(--muted)}
+nav .links a{color:var(--muted);transition:color .2s}
+nav .links a:hover{color:var(--cyan)}
+#langBtn{
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  padding:.4rem .9rem;border-radius:999px;cursor:pointer;font-size:.8rem;
+  transition:all .2s;
+}
+#langBtn:hover{border-color:var(--cyan);color:var(--cyan)}
+@media(max-width:760px){ nav .links{display:none} }
+
+/* ---------- Hero ---------- */
+header{
+  position:relative;text-align:center;
+  padding:4rem 1.5rem 3rem;overflow:hidden;
+  background:
+    radial-gradient(1000px 420px at 50% -80px, rgba(34,211,238,.14), transparent 60%),
+    radial-gradient(700px 320px at 85% 110%, rgba(139,92,246,.10), transparent 60%);
+}
+.hero-grid{
+  position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:
+    linear-gradient(rgba(28,42,68,.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28,42,68,.35) 1px, transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(ellipse 80% 70% at 50% 30%, #000 40%, transparent 75%);
+}
+header .inner{position:relative;max-width:960px;margin:0 auto}
+.badge{
+  display:inline-block;padding:.35rem 1rem;border-radius:999px;font-size:.78rem;
+  border:1px solid var(--line);background:rgba(16,26,48,.6);color:var(--muted);
+  letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1.3rem;
+}
+header h1{
+  font-size:clamp(2.6rem,9vw,5rem);font-weight:800;letter-spacing:6px;
+  background:linear-gradient(100deg,#fff 20%, var(--cyan) 55%, var(--emerald) 90%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+header p.sub{max-width:720px;margin:1.1rem auto 0;color:var(--muted);font-size:1.05rem}
+.hero-canvas-wrap{
+  max-width:880px;margin:2.2rem auto 0;border:1px solid var(--line);border-radius:14px;
+  overflow:hidden;background:#050910;box-shadow:0 20px 60px rgba(0,0,0,.45);
+}
+.hero-canvas-wrap .bar{
+  display:flex;align-items:center;gap:.8rem;padding:.5rem .9rem;
+  background:var(--panel2);border-bottom:1px solid var(--line);
+  font-size:.72rem;color:var(--muted);letter-spacing:1px;
+}
+.bar .dot{width:10px;height:10px;border-radius:50%;background:var(--emerald);box-shadow:0 0 12px var(--emerald)}
+.cta{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2.2rem}
+.btn{
+  display:inline-flex;align-items:center;gap:.55rem;padding:.85rem 1.7rem;border-radius:12px;
+  font-weight:600;font-size:.95rem;cursor:pointer;border:1px solid transparent;transition:all .2s;
+}
+.btn.primary{background:linear-gradient(90deg,var(--cyan),var(--emerald));color:#04121c}
+.btn.primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn.ghost{border-color:var(--line);color:var(--text);background:var(--panel2)}
+.btn.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ---------- Sections ---------- */
+section{max-width:1100px;margin:0 auto;padding:3.5rem 1.5rem}
+.sec-title{text-align:center;margin-bottom:2.4rem}
+.sec-title h2{font-size:clamp(1.6rem,4.5vw,2.3rem);font-weight:700}
+.sec-title p{color:var(--muted);max-width:680px;margin:.6rem auto 0;font-size:.98rem}
+
+/* Simulator */
+#simulator .sim-wrap{max-width:880px;margin:0 auto}
+.sim-canvas{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#04070f}
+.sim-canvas canvas{width:100%;height:auto}
+.sim-controls{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem;align-items:center;justify-content:center}
+.sc-btn{
+  padding:.5rem 1.1rem;border-radius:999px;border:1px solid var(--line);
+  background:var(--panel2);color:var(--text);cursor:pointer;font-size:.82rem;font-weight:500;transition:all .2s;
+}
+.sc-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.sc-btn.active{background:var(--cyan);color:#04121c;border-color:var(--cyan)}
+.sim-readout{
+  display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;
+  margin-top:.8rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--muted);
+}
+.sim-readout b{color:var(--cyan);font-weight:500}
+.hint{text-align:center;color:var(--muted);font-size:.78rem;margin-top:.5rem}
+
+/* Features */
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.card{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--line);border-radius:14px;padding:1.4rem;
+  transition:transform .2s,border-color .2s;
+}
+.card:hover{transform:translateY(-3px);border-color:rgba(34,211,238,.45)}
+.card .ic{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);margin-bottom:.9rem}
+.card .ic svg{width:22px;height:22px;stroke:var(--cyan)}
+.card h3{font-size:1rem;font-weight:600;margin-bottom:.4rem}
+.card p{font-size:.85rem;color:var(--muted)}
+
+/* Gallery */
+#gallery .carousel{position:relative;max-width:860px;margin:0 auto}
+#gallery .carousel-inner{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#04070f}
+#gallery .carousel-inner img{width:100%;display:block;aspect-ratio:16/9;object-fit:contain;background:#04070f}
+#gallery .cap{text-align:center;padding:.7rem;font-size:.85rem;color:var(--muted);background:var(--panel2);border-top:1px solid var(--line)}
+.car-btn{
+  position:absolute;top:50%;transform:translateY(-50%);background:rgba(7,11,22,.7);
+  border:1px solid var(--line);color:var(--text);width:42px;height:42px;border-radius:50%;
+  cursor:pointer;font-size:1.1rem;transition:all .2s;z-index:5;
+}
+.car-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.car-btn.prev{left:-58px}
+.car-btn.next{right:-58px}
+.car-dots{display:flex;gap:.45rem;justify-content:center;margin-top:1rem}
+.car-dots button{width:9px;height:9px;border-radius:50%;border:none;background:var(--line);cursor:pointer;padding:0}
+.car-dots button.active{background:var(--cyan);width:24px;border-radius:999px}
+@media(max-width:980px){ .car-btn.prev{left:-6px}.car-btn.next{right:-6px} }
+
+/* Specs */
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:start;padding:.8rem 1rem;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{color:var(--muted);font-weight:500;letter-spacing:1px;font-size:.75rem;text-transform:uppercase}
+td:first-child{color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:.82rem;white-space:nowrap}
+[dir="rtl"] td:first-child,[dir="rtl"] th{text-align:right}
+.table-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.table-card .table-inner{overflow-x:auto}
+
+/* Applications */
+.apps{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.app{padding:1.1rem 1.2rem;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:.88rem;color:var(--muted)}
+.app b{display:block;color:var(--text);font-weight:600;margin-bottom:.2rem}
+
+/* CTA block */
+.cta-block{
+  max-width:780px;margin:3rem auto 0;text-align:center;
+  border:1px solid var(--line);border-radius:18px;padding:2.4rem 1.6rem;
+  background:
+    radial-gradient(600px 240px at 50% -40px, rgba(34,211,238,.12), transparent 60%), var(--panel);
+}
+.cta-block h2{font-size:1.5rem;margin-bottom:.6rem}
+.cta-block p{color:var(--muted);margin-bottom:1.4rem}
+.note{font-size:.78rem;color:var(--muted);margin-top:1rem}
+
+/* Footer */
+footer{
+  text-align:center;padding:2.2rem 1.5rem;color:var(--muted);font-size:.82rem;
+  border-top:1px solid var(--line);background:var(--panel);
+}
+footer .brand{justify-content:center;margin-bottom:.6rem}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="15" stroke="#22d3ee" stroke-width="1.4" opacity=".55"/><circle cx="17" cy="17" r="9" stroke="#10b981" stroke-width="1.4" opacity=".55"/><path d="M17 8v5M17 21v5M8 17h5M21 17h5" stroke="#22d3ee" stroke-width="1.4"/><circle cx="17" cy="17" r="2.4" fill="#22d3ee"/><path d="M17 2A15 15 0 0 1 30.5 15" stroke="#10b981" stroke-width="2" stroke-linecap="round"/></svg>
+    <span>SPECTROX<small data-i18n="sub">RF SPECTRUM ANALYZER</small></span>
+  </div>
+  <div class="links">
+    <a href="#simulator" data-i18n="navSim">Live Demo</a>
+    <a href="#features" data-i18n="navFeat">Features</a>
+    <a href="#gallery" data-i18n="navGal">Gallery</a>
+    <a href="#specs" data-i18n="navSpecs">Specifications</a>
+    <a href="#contact" data-i18n="navContact">Contact</a>
+  </div>
+  <button id="langBtn">العربية</button>
+</nav>
+
+<!-- HERO -->
+<header>
+  <div class="hero-grid"></div>
+  <div class="inner">
+    <span class="badge" data-i18n="badge">Professional RF Spectrum Analysis</span>
+    <h1>SPECTROX</h1>
+    <p class="sub" data-i18n="heroSub">Advanced RF Spectrum Analyzer — <span class="ltr">1 MHz – 7.25 GHz</span> on <b>HackRF</b> and <b>PlutoSDR</b>. Live waterfall, demodulation, IQ recording, signal intelligence and remote web control.</p>
+    <div class="hero-canvas-wrap">
+      <div class="bar"><span class="dot"></span><span data-i18n="liveTag">LIVE SIMULATION — SPECTRUM &amp; WATERFALL</span></div>
+      <canvas id="heroCanvas" width="880" height="300"></canvas>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="#simulator" data-i18n="btnDemo">Try Interactive Demo</a>
+      <a class="btn ghost" href="#features" data-i18n="btnFeat">Explore Features</a>
+    </div>
+  </div>
+</header>
+
+<!-- SIMULATOR -->
+<section id="simulator">
+  <div class="sec-title">
+    <h2 data-i18n="simTitle">Live Interactive Simulator</h2>
+    <p data-i18n="simSub">An animated preview of the SpectroX display — sweep the spectrum, watch the waterfall develop. Hover to read the frequency marker.</p>
+  </div>
+  <div class="sim-wrap">
+    <div class="sim-canvas"><canvas id="simCanvas" width="920" height="420"></canvas></div>
+    <div class="sim-controls">
+      <button class="sc-btn" id="btnPause" data-i18n="pause">Pause</button>
+      <button class="sc-btn" id="btnReset" data-i18n="reset">Reset</button>
+      <button class="sc-btn band" data-band="full" data-i18n="bFull">Full Band</button>
+      <button class="sc-btn band" data-band="gsm" data-i18n="bGSM">900 MHz</button>
+      <button class="sc-btn band" data-band="wifi" data-i18n="bWifi">2.4 GHz</button>
+      <button class="sc-btn active band" data-band="drone" data-i18n="bDrone">5.8 GHz</button>
+    </div>
+    <div class="sim-readout">
+      <span><span data-i18n="rFreq">FREQ</span>: <b class="ltr" id="roFreq">—</b></span>
+      <span><span data-i18n="rLevel">LEVEL</span>: <b class="ltr" id="roLevel">—</b></span>
+      <span><span data-i18n="rPeak">PEAK</span>: <b class="ltr" id="roPeak">—</b></span>
+    </div>
+    <div class="hint" data-i18n="simHint">Move the mouse over the spectrum to read frequency; click to place a marker.</div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="sec-title">
+    <h2 data-i18n="featTitle">Capabilities</h2>
+    <p data-i18n="featSub">A complete RF analysis workstation — from raw DSP to an intuitive, remote-controllable interface.</p>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M2 12h3l3-9 4 18 3-9h7"/></svg></div>
+      <h3 data-i18n="f1t">Multi-Backend SDR</h3>
+      <p data-i18n="f1d">Native <b>HackRF</b> bridge and <b>PlutoSDR</b> (libiio) backends with automatic gain guards and selectable FFT resolution.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 12h2l2-6 3 12 3-16 2 10h4"/></svg></div>
+      <h3 data-i18n="f2t">Waterfall &amp; Spectrum</h3>
+      <p data-i18n="f2d">Real-time FFT display with peak hold, persistent overlay and <b>27 color palettes</b> for the waterfall view.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v11"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="15" r="2.5"/></svg></div>
+      <h3 data-i18n="f3t">FM / AM Demodulator</h3>
+      <p data-i18n="f3d">Listen to stations with volume control, live preview and quick frequency tuning.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><path d="M12 7v10"/></svg></div>
+      <h3 data-i18n="f4t">IQ Recorder</h3>
+      <p data-i18n="f4d">SigMF / CS8 capture up to <span class="ltr">20 MHz</span> with metadata, size guards and automatic resume.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M8.5 11h5M11 8.5v5"/></svg></div>
+      <h3 data-i18n="f5t">Signal Library</h3>
+      <p data-i18n="f5d">Match live emissions against a known-signal database for fast RF identification.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="6"/></svg></div>
+      <h3 data-i18n="f6t">Power Meter</h3>
+      <p data-i18n="f6d">Calibrated power measurement with adjustable reference levels and LNA/VGA control.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></div>
+      <h3 data-i18n="f7t">Smart Monitor</h3>
+      <p data-i18n="f7d">Threshold-based detection with sound alarms, screenshots and video clipping.</p>
+    </div>
+    <div class="card">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
+      <h3 data-i18n="f8t">Web Control</h3>
+      <p data-i18n="f8d">WebSocket + HTTP server for remote control and viewing from any browser or device.</p>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="sec-title">
+    <h2 data-i18n="galTitle">Product Gallery</h2>
+    <p data-i18n="galSub">Real screenshots from the SpectroX application in the field.</p>
+  </div>
+  <div class="carousel">
+    <button class="car-btn prev" id="prevBtn" data-i18n="prev">‹</button>
+    <div class="carousel-inner">
+      <img id="galImg" src="assets/main-picture-spectrum.png" alt="SpectroX spectrum">
+    </div>
+    <button class="car-btn next" id="nextBtn" data-i18n="next">›</button>
+    <div class="cap" id="galCap"></div>
+  </div>
+  <div class="car-dots" id="carDots"></div>
+</section>
+
+<!-- SPECS -->
+<section id="specs">
+  <div class="sec-title">
+    <h2 data-i18n="specTitle">Specifications</h2>
+    <p data-i18n="specSub">Technical summary of the analyzer platform.</p>
+  </div>
+  <div class="table-card">
+    <div class="table-inner">
+      <table>
+        <tbody>
+          <tr><td data-i18n="s1k">Frequency Range</td><td data-i18n="s1v">HackRF: 1 MHz – 7.25 GHz &nbsp;·&nbsp; PlutoSDR: 70 MHz – 6 GHz</td></tr>
+          <tr><td data-i18n="s2k">SDR Backends</td><td data-i18n="s2v">HackRF (native bridge) and PlutoSDR (libiio), auto gain guards</td></tr>
+          <tr><td data-i18n="s3k">FFT &amp; Resolution</td><td data-i18n="s3v">Selectable FFT resolution down to 1 kHz bins, up to 262,144 samples</td></tr>
+          <tr><td data-i18n="s4k">IQ Capture</td><td data-i18n="s4v">SigMF / CS8 format, up to 20 MHz sample rate, metadata + size guards</td></tr>
+          <tr><td data-i18n="s5k">RF Gain Control</td><td data-i18n="s5v">LNA / VGA / AMP per profile with calibrated spur suppression</td></tr>
+          <tr><td data-i18n="s6k">Demodulation</td><td data-i18n="s6v">FM / AM with volume control and live station preview</td></tr>
+          <tr><td data-i18n="s7k">Monitoring</td><td data-i18n="s7v">Threshold detection, dBm reference levels, sound alarm, screenshots &amp; video</td></tr>
+          <tr><td data-i18n="s8k">Power Meter</td><td data-i18n="s8v">Calibrated power measurement with reference and step controls</td></tr>
+          <tr><td data-i18n="s9k">Remote Access</td><td data-i18n="s9v">WebSocket + HTTP server for browser and mobile control</td></tr>
+          <tr><td data-i18n="s10k">UI &amp; Language</td><td data-i18n="s10v">Modern desktop UI (PyQt), English and Arabic interface</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- APPLICATIONS -->
+<section id="apps">
+  <div class="sec-title">
+    <h2 data-i18n="appTitle">Built For</h2>
+    <p data-i18n="appSub">Where SpectroX earns its keep.</p>
+  </div>
+  <div class="apps">
+    <div class="app"><b data-i18n="a1t">Spectrum Monitoring</b><span data-i18n="a1d">Continuous wideband observation of the RF environment.</span></div>
+    <div class="app"><b data-i18n="a2t">RF Intelligence</b><span data-i18n="a2d">Identify and classify unknown emissions with the signal library.</span></div>
+    <div class="app"><b data-i18n="a3t">GNSS Assessment</b><span data-i18n="a3d">Study satellite-navigation signals and interference conditions.</span></div>
+    <div class="app"><b data-i18n="a4t">UAV Channel Analysis</b><span data-i18n="a4d">Characterize control and telemetry channels of UAV systems.</span></div>
+    <div class="app"><b data-i18n="a5t">EMC &amp; Lab Testing</b><span data-i18n="a5d">Measure emissions, calibrate devices and validate RF hardware.</span></div>
+    <div class="app"><b data-i18n="a6t">Education &amp; Research</b><span data-i18n="a6d">Hands-on SDR experiments in telecommunications laboratories.</span></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="contact" class="cta-block">
+  <h2 data-i18n="ctaTitle">SpectroX is available for deployment and collaboration</h2>
+  <p data-i18n="ctaSub">The source code is maintained privately to protect intellectual property. For licensing, deployments, research partnerships or a live demonstration, get in touch.</p>
+  <div class="cta">
+    <a class="btn primary" href="mailto:Prof.AB@outlook.com" data-i18n="ctaMail">Contact me</a>
+    <a class="btn ghost" href="https://github.com/AbdoBallouk/ASTRYX" data-i18n="ctaAstryx">ASTRYX Portfolio</a>
+  </div>
+  <div class="note" data-i18n="ctaNote">© Dr. Abdo Ballouk · All Rights Reserved · Screenshots shown from the actual application.</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="brand">
+    <svg viewBox="0 0 34 34" width="26" height="26" fill="none"><circle cx="17" cy="17" r="15" stroke="#22d3ee" stroke-width="1.4" opacity=".55"/><path d="M17 8v5M17 21v5M17 17" stroke="#22d3ee" stroke-width="1.4"/><circle cx="17" cy="17" r="2.4" fill="#22d3ee"/></svg>
+    <span>SPECTROX</span>
+  </div>
+  <div data-i18n="footerLine">Advanced RF Spectrum Analysis · HackRF · PlutoSDR · 1 MHz – 7.25 GHz</div>
+  <div style="margin-top:.4rem"><span data-i18n="footerBy">Built &amp; maintained by</span> <a href="https://github.com/AbdoBallouk">Dr. Abdo Ballouk</a></div>
+</footer>
+
+<script>
+/* ================= Language toggle ================= */
+var I18N = {
+  en: {
+    sub:"RF SPECTRUM ANALYZER", navSim:"Live Demo", navFeat:"Features", navGal:"Gallery",
+    navSpecs:"Specifications", navContact:"Contact",
+    badge:"Professional RF Spectrum Analysis",
+    heroSub:"Advanced RF Spectrum Analyzer — <span class='ltr'>1 MHz – 7.25 GHz</span> on <b>HackRF</b> and <b>PlutoSDR</b>. Live waterfall, demodulation, IQ recording, signal intelligence and remote web control.",
+    liveTag:"LIVE SIMULATION — SPECTRUM &amp; WATERFALL",
+    btnDemo:"Try Interactive Demo", btnFeat:"Explore Features",
+    simTitle:"Live Interactive Simulator",
+    simSub:"An animated preview of the SpectroX display — sweep the spectrum, watch the waterfall develop. Hover to read the frequency marker.",
+    pause:"Pause", reset:"Reset", bFull:"Full Band", bGSM:"900 MHz", bWifi:"2.4 GHz", bDrone:"5.8 GHz",
+    rFreq:"FREQ", rLevel:"LEVEL", rPeak:"PEAK",
+    simHint:"Move the mouse over the spectrum to read frequency; click to place a marker.",
+    featTitle:"Capabilities", featSub:"A complete RF analysis workstation — from raw DSP to an intuitive, remote-controllable interface.",
+    f1t:"Multi-Backend SDR", f1d:"Native <b>HackRF</b> bridge and <b>PlutoSDR</b> (libiio) backends with automatic gain guards and selectable FFT resolution.",
+    f2t:"Waterfall &amp; Spectrum", f2d:"Real-time FFT display with peak hold, persistent overlay and <b>27 color palettes</b> for the waterfall view.",
+    f3t:"FM / AM Demodulator", f3d:"Listen to stations with volume control, live preview and quick frequency tuning.",
+    f4t:"IQ Recorder", f4d:"SigMF / CS8 capture up to <span class='ltr'>20 MHz</span> with metadata, size guards and automatic resume.",
+    f5t:"Signal Library", f5d:"Match live emissions against a known-signal database for fast RF identification.",
+    f6t:"Power Meter", f6d:"Calibrated power measurement with adjustable reference levels and LNA/VGA control.",
+    f7t:"Smart Monitor", f7d:"Threshold-based detection with sound alarms, screenshots and video clipping.",
+    f8t:"Web Control", f8d:"WebSocket + HTTP server for remote control and viewing from any browser or device.",
+    galTitle:"Product Gallery", galSub:"Real screenshots from the SpectroX application in the field.",
+    prev:"‹", next:"›",
+    specTitle:"Specifications", specSub:"Technical summary of the analyzer platform.",
+    s1k:"Frequency Range", s1v:"HackRF: 1 MHz – 7.25 GHz &nbsp;·&nbsp; PlutoSDR: 70 MHz – 6 GHz",
+    s2k:"SDR Backends", s2v:"HackRF (native bridge) and PlutoSDR (libiio), auto gain guards",
+    s3k:"FFT &amp; Resolution", s3v:"Selectable FFT resolution down to 1 kHz bins, up to 262,144 samples",
+    s4k:"IQ Capture", s4v:"SigMF / CS8 format, up to 20 MHz sample rate, metadata + size guards",
+    s5k:"RF Gain Control", s5v:"LNA / VGA / AMP per profile with calibrated spur suppression",
+    s6k:"Demodulation", s6v:"FM / AM with volume control and live station preview",
+    s7k:"Monitoring", s7v:"Threshold detection, dBm reference levels, sound alarm, screenshots &amp; video",
+    s8k:"Power Meter", s8v:"Calibrated power measurement with reference and step controls",
+    s9k:"Remote Access", s9v:"WebSocket + HTTP server for browser and mobile control",
+    s10k:"UI &amp; Language", s10v:"Modern desktop UI (PyQt), English and Arabic interface",
+    appTitle:"Built For", appSub:"Where SpectroX earns its keep.",
+    a1t:"Spectrum Monitoring", a1d:"Continuous wideband observation of the RF environment.",
+    a2t:"RF Intelligence", a2d:"Identify and classify unknown emissions with the signal library.",
+    a3t:"GNSS Assessment", a3d:"Study satellite-navigation signals and interference conditions.",
+    a4t:"UAV Channel Analysis", a4d:"Characterize control and telemetry channels of UAV systems.",
+    a5t:"EMC &amp; Lab Testing", a5d:"Measure emissions, calibrate devices and validate RF hardware.",
+    a6t:"Education &amp; Research", a6d:"Hands-on SDR experiments in telecommunications laboratories.",
+    ctaTitle:"SpectroX is available for deployment and collaboration",
+    ctaSub:"The source code is maintained privately to protect intellectual property. For licensing, deployments, research partnerships or a live demonstration, get in touch.",
+    ctaMail:"Contact me", ctaAstryx:"ASTRYX Portfolio",
+    ctaNote:"© Dr. Abdo Ballouk · All Rights Reserved · Screenshots shown from the actual application.",
+    footerLine:"Advanced RF Spectrum Analysis · HackRF · PlutoSDR · 1 MHz – 7.25 GHz",
+    footerBy:"Built &amp; maintained by",
+    g1:"Main spectrum view", g2:"Arabic interface (RTL)", g3:"Power meter view",
+    g4:"Delta markers & measurement", g5:"Spectrogram with 27 palettes", g6:"Wideband spectrum sweep"
+  },
+  ar: {
+    sub:"محلّل الطيف الترددي", navSim:"تجربة مباشرة", navFeat:"المزايا", navGal:"المعرض",
+    navSpecs:"المواصفات", navContact:"تواصل",
+    badge:"تحليل طيف ترددي احترافي",
+    heroSub:"محلّل طيف ترددي متقدم — <span class='ltr'>1 ميجاهرتز – 7.25 جيجاهرتز</span> عبر منصتي <b>HackRF</b> و<b>PlutoSDR</b>. مطياف حي، إزالة تشكيل، تسجيل IQ، استخبارات الإشارات وتحكم عن بُعد.",
+    liveTag:"محاكاة حية — الطيف والمطياف المائي",
+    btnDemo:"جرّب المحاكاة التفاعلية", btnFeat:"استكشف المزايا",
+    simTitle:"محاكاة تفاعلية حية",
+    simSub:"معاينة متحركة لشاشة SpectroX — امسح الطيف وراقب تطوّر المطياف المائي. مرّر المؤشر لقراءة تردد الإشارة.",
+    pause:"إيقاف", reset:"إعادة ضبط", bFull:"النطاق الكامل", bGSM:"900 ميجاهرتز", bWifi:"2.4 جيجاهرتز", bDrone:"5.8 جيجاهرتز",
+    rFreq:"التردد", rLevel:"المستوى", rPeak:"القمة",
+    simHint:"حرّك المؤشر فوق الطيف لقراءة التردد، وانقر لوضع علامة.",
+    featTitle:"الإمكانيات", featSub:"محطة تحليل راديوي متكاملة — من معالجة الإشارات الخام إلى واجهة بديهية قابلة للتحكم عن بُعد.",
+    f1t:"دعم متعدد الأجهزة", f1d:"دعم مباشر لـ<b>HackRF</b> و<b>PlutoSDR</b> (libiio) مع حماية كسب تلقائي ودقة FFT قابلة للاختيار.",
+    f2t:"المطياف والطيف", f2d:"عرض FFT لحظي مع حفظ القمم والطبقة الثابتة و<b>27 لوحة ألوان</b> للمطياف المائي.",
+    f3t:"مزيل تشكيل FM/AM", f3d:"استمع لمحطات بث مع التحكم بالصوت ومعاينة حية وضبط تردد سريع.",
+    f4t:"مسجّل IQ", f4d:"تسجيل بصيغة SigMF/CS8 حتى <span class='ltr'>20 ميجاهرتز</span> مع بيانات وصفية وحدود حجم واستئناف تلقائي.",
+    f5t:"مكتبة الإشارات", f5d:"مطابقة الانبعاثات الحية مع قاعدة بيانات إشارات معروفة لتحديد المصدر بسرعة.",
+    f6t:"مقياس القدرة", f6d:"قياس قدرة معاير مع مستويات مرجعية قابلة للضبط والتحكم بـ LNA/VGA.",
+    f7t:"المراقبة الذكية", f7d:"كشف تلقائي بعتبات محددة مع إنذار صوتي ولقطات شاشة وتسجيل فيديو.",
+    f8t:"التحكم عبر الويب", f8d:"خادم WebSocket + HTTP للتحكم والعرض عن بُعد من أي متصفح أو جهاز.",
+    galTitle:"معرض المنتج", galSub:"لقطات حقيقية من تطبيق SpectroX أثناء الاستخدام.",
+    prev:"‹", next:"›",
+    specTitle:"المواصفات", specSub:"ملخص فني لمنصة المحلل.",
+    s1k:"مدى التردد", s1v:"HackRF: من 1 ميجاهرتز حتى 7.25 جيجاهرتز · PlutoSDR: من 70 ميجاهرتز حتى 6 جيجاهرتز",
+    s2k:"أجهزة SDR", s2v:"HackRF (جسر أصلي) وPlutoSDR (libiio) مع حماية كسب تلقائية",
+    s3k:"FFT والدقة", s3v:"دقة اختيارية حتى 1 كيلوهرتز للخانة، وحتى 262,144 عينة",
+    s4k:"تسجيل IQ", s4v:"بصيغة SigMF/CS8، معدل أخذ عينات حتى 20 ميجاهرتز، بيانات وصفية وحدود حجم",
+    s5k:"التحكم بالكسب", s5v:"LNA / VGA / AMP حسب الملف الشخصي مع كبح شوائب معاير",
+    s6k:"إزالة التشكيل", s6v:"FM / AM مع التحكم بالصوت ومعاينة حية للمحطة",
+    s7k:"المراقبة", s7v:"كشف بالعتبات، مستويات مرجعية dBm، إنذار صوتي، لقطات وفيديو",
+    s8k:"مقياس القدرة", s8v:"قياس قدرة معاير مع تحكم بالمرجع والخطوة",
+    s9k:"الوصول عن بُعد", s9v:"خادم WebSocket + HTTP للتحكم من المتصفح والجوال",
+    s10k:"الواجهة واللغة", s10v:"واجهة سطح مكتب حديثة (PyQt) مع دعم الإنجليزية والعربية",
+    appTitle:"مصمّم لـ", appSub:"أين يبرز SpectroX.",
+    a1t:"مراقبة الطيف", a1d:"مراقبة مستمرة واسعة النطاق للبيئة الراديوية.",
+    a2t:"الاستخبارات الراديوية", a2d:"تحديد وتصنيف الانبعاثات غير المعروفة عبر مكتبة الإشارات.",
+    a3t:"تقييم GNSS", a3d:"دراسة إشارات الملاحة الفضائية وظروف التشويش.",
+    a4t:"تحليل قنوات الطائرات", a4d:"توصيف قنوات التحكم والقياس عن بُعد للطائرات بدون طيار.",
+    a5t:"الاختبار المخبري", a5d:"قياس الانبعاثات ومعايرة الأجهزة والتحقق من عتاد RF.",
+    a6t:"التعليم والبحث", a6d:"تجارب SDR عملية في مختبرات الاتصالات.",
+    ctaTitle:"SpectroX متاح للنشر والتعاون",
+    ctaSub:"الكود المصدري محفوظ بشكل خاص حمايةً للملكية الفكرية. للترخيص أو النشر أو الشراكات البحثية أو عرض حي، تواصل معي.",
+    ctaMail:"تواصل معي", ctaAstryx:"معرض ASTRYX",
+    ctaNote:"© د. عبدو بلوك · جميع الحقوق محفوظة · اللقطات من التطبيق الفعلي.",
+    footerLine:"تحليل طيف ترددي متقدم · HackRF · PlutoSDR · 1 ميجاهرتز – 7.25 جيجاهرتز",
+    footerBy:"تصميم وإشراف",
+    g1:"عرض الطيف الرئيسي", g2:"الواجهة العربية (RTL)", g3:"عرض مقياس القدرة",
+    g4:"علامات الفرق والقياس", g5:"المطياف مع 27 لوحة ألوان", g6:"مسح الطيف واسع النطاق"
+  }
+};
+
+var curLang = 'en';
+function applyLang(lang){
+  curLang = lang;
+  var dict = I18N[lang];
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.getAttribute('data-i18n');
+    if(dict[k] !== undefined) el.innerHTML = dict[k];
+  });
+  document.documentElement.setAttribute('lang', lang);
+  document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+  renderCaption();
+  document.getElementById('langBtn').textContent = lang === 'ar' ? 'English' : 'العربية';
+}
+document.getElementById('langBtn').addEventListener('click', function(){
+  applyLang(curLang === 'en' ? 'ar' : 'en');
+});
+
+/* ================= Spectrum simulation ================= */
+
+var PALETTE = [
+  [4,8,22],[10,22,58],[20,48,96],[16,92,140],[18,150,168],[36,186,140],[94,208,66],[191,214,60],[243,196,66],[252,130,50],[238,58,52]
+];
+function heat(v){ // v in 0..1
+  v = Math.max(0, Math.min(1, v));
+  var f = v * (PALETTE.length - 1);
+  var i = Math.floor(f), t = f - i, j = Math.min(i + 1, PALETTE.length - 1);
+  var c = [0,1,2].map(function(k){ return Math.round(PALETTE[i][k] + (PALETTE[j][k]-PALETTE[i][k])*t); });
+  return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+}
+
+function Bands(){ return { full:{lo:1, hi:7250}, gsm:{lo:850, hi:970}, wifi:{lo:2400, hi:2500}, drone:{lo:5700, hi:5900} }; }
+var curBand = 'drone';
+
+// global noise phase generators
+function makeSpectrum(len, bandId, t){
+  var band = Bands()[bandId];
+  var data = new Float32Array(len);
+  var x0 = (band.lo + band.hi) / 2;
+  var span = band.hi - band.lo;
+  var i;
+  for(i = 0; i < len; i++){
+    var freq = band.lo + (span * i) / len;
+    var v = 0.22 + 0.06 * Math.sin(t * 2.0 + i * 0.35) + 0.05 * Math.sin(t * 3.7 + i * 1.1);
+    var peakCount = bandId === 'full' ? 7 : 3;
+    var k;
+    for(k = 0; k < peakCount; k++){
+      var pk = band.lo + ((span * (0.12 + 0.76 * k / Math.max(peakCount - 1, 1))) % span);
+      var w = span * (0.03 + 0.05 * Math.abs(Math.sin(t * 0.05 + k * 1.7)));
+      var drift = 0.06 * span * Math.sin(t * 0.11 + k * 2.3);
+      var d = (freq - (pk + drift)) / w;
+      v += 0.75 * Math.exp(-d * d) * (0.85 + 0.25 * Math.sin(t * 1.4 + k * 3.1));
+    }
+    // noise skirt
+    v += 0.05 * Math.sin(freq * 0.011 + t * 5.0);
+    data[i] = v;
+  }
+  return data;
+}
+
+function drawSpectrumLine(ctx, w, h, data, flax){
+  var i, n = data.length;
+  ctx.clearRect(0, 0, w, h);
+  // grid
+  ctx.strokeStyle = 'rgba(28,42,68,.7)';
+  ctx.lineWidth = 1;
+  var gy = 0; for(gy = 0; gy < 5; gy++){ ctx.beginPath(); ctx.moveTo(0, h * gy / 4); ctx.lineTo(w, h * gy / 4); ctx.stroke(); }
+  var smooth = 2;
+  ctx.beginPath();
+  for(i = 0; i < n; i += smooth){
+    var x = (i / (n - 1)) * w;
+    var y = h - 10 - (data[i] * (h - 24));
+    if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = '#22d3ee';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#22d3ee'; ctx.shadowBlur = 8;
+  ctx.stroke();
+  // fill
+  ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+  var g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, 'rgba(34,211,238,.25)');
+  g.addColorStop(1, 'rgba(34,211,238,0)');
+  ctx.fillStyle = g; ctx.fill();
+  ctx.shadowBlur = 0;
+  // markers from call before (optional via closure)
+}
+
+function drawWaterfall(ctx, w, h, data, bandId, time){
+  var n = data.length;
+  var band = Bands()[bandId];
+  var img = ctx.getImageData(0, 0, w, h);
+  var rowW = w, rowH = Math.ceil(h * 0.14);
+  // shift down once
+  ctx.globalAlpha = .62;
+  ctx.drawImage(ctx.canvas, 0, 0, w, h, 0, rowH, w, h - rowH);
+  ctx.globalAlpha = 1;
+  // draw new row
+  for(var i = 0; i < n; i++){
+    var px = Math.round(i * (rowW - 1) / (n - 1));
+    var rgb = PALETTE[Math.min(PALETTE.length - 1, Math.max(0, Math.floor(data[i] * (PALETTE.length - 1))))];
+    ctx.fillStyle = 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+    ctx.fillRect(px, 0, 2, rowH);
+  }
+}
+
+/* simulator canvas (main + waterfall stacked) */
+var sim = (function(){
+  var canvas = document.getElementById('simCanvas');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var specH = Math.round(H * 0.42);
+  var run = true, marker = null;
+  var t = Math.random() * 50;
+  var len = 256, lastData = new Float32Array(len);
+  var peakHold = new Float32Array(len);
+  var bandId = 'drone';
+
+  function bandLoHi(){ var b = Bands()[bandId]; return {lo:b.lo, hi:b.hi}; }
+
+  function update(){
+    t += run ? 0.05 : 0;
+    lastData = makeSpectrum(len, bandId, t);
+    for(var i = 0; i < len; i++){ if(lastData[i] > peakHold[i]) peakHold[i] = lastData[i]; else peakHold[i] *= 0.995; }
+    render();
+    requestAnimationFrame(update);
+  }
+
+  function fmt(f){ return f >= 1000 ? (f/1000).toFixed(f >= 10000 ? 1 : 2) + ' GHz' : Math.round(f) + ' MHz'; }
+
+  function render(){
+    ctx.clearRect(0, 0, W, H);
+    var b = bandLoHi();
+    // spectrum on top region
+    var sy = 8;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, sy, W, specH); ctx.clip();
+    drawSpectrumLine(ctx, W, specH, lastData, 0);
+    // peak hold line
+    ctx.beginPath();
+    for(var i = 0; i < len; i++){ var x = (i/(len-1))*W; var y = sy + specH - 10 - (peakHold[i]*(specH-24)); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+    ctx.strokeStyle = 'rgba(245,158,11,.85)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.restore();
+
+    // labels top
+    ctx.fillStyle = 'rgba(143,163,196,.9)';
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillText(fmt(b.lo), 10, sy + 16);
+    ctx.textAlign = 'center'; ctx.fillText(bandId.toUpperCase(), W/2, sy + 14);
+    ctx.textAlign = 'right'; ctx.fillText(fmt(b.hi), W - 10, sy + 16);
+    ctx.textAlign = 'left';
+
+    // divider
+    ctx.fillStyle = 'rgba(28,42,68,.9)';
+    ctx.fillRect(0, sy + specH, W, 2);
+
+    // waterfall
+    drawWaterfall(ctx, W, H - (sy + specH + 2), lastData, bandId, t);
+
+    // marker
+    if(marker !== null){
+      var mx = marker.x * W;
+      ctx.strokeStyle = '#f0f6ff'; ctx.lineWidth = 1; ctx.setLineDash([5,4]);
+      ctx.beginPath(); ctx.moveTo(mx, sy); ctx.lineTo(mx, H); ctx.stroke(); ctx.setLineDash([]);
+      var mf = b.lo + (b.hi - b.lo) * marker.x;
+      var lvl = marker.level;
+      ctx.fillStyle = '#e6edf7';
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText(fmt(mf) + '  ' + Math.round(lvl * -40 + 20) + ' dBm', mx + 8, sy + 34);
+    }
+    // readouts
+    document.getElementById('roPeak').textContent = (function(){ var mi=0; for(var i=1;i<len;i++) if(lastData[i]>lastData[mi]) mi=i; var b2=bandLoHi(); return fmt(b2.lo+(b2.hi-b2.lo)*mi/(len-1)); })();
+  }
+
+  // pointer
+  canvas.addEventListener('mousemove', function(e){
+    var r = canvas.getBoundingClientRect();
+    var x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    var y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+    var b = bandLoHi();
+    document.getElementById('roFreq').textContent = fmt(b.lo + (b.hi - b.lo) * x);
+    var idx = Math.min(len - 1, Math.floor(x * (len - 1)));
+    document.getElementById('roLevel').textContent = Math.round(lastData[idx] * -40 + 20) + ' dBm';
+    marker = { x: x, level: lastData[idx] };
+  });
+  canvas.addEventListener('mouseleave', function(){ marker = null; });
+  canvas.addEventListener('click', function(){ marker = marker || { x: 0.5, level: lastData[0] }; });
+
+  var svgTxt = document.getElementById('roFreq');
+  document.getElementById('btnPause').addEventListener('click', function(e){
+    run = !run;
+    e.target.textContent = run ? (curLang==='ar'?'إيقاف':'Pause') : (curLang==='ar'?'تشغيل':'Play');
+  });
+  document.getElementById('btnReset').addEventListener('click', function(){ t = 0; peakHold.fill(0); });
+
+  document.querySelectorAll('.band').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.band').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      bandId = btn.getAttribute('data-band');
+      marker = null;
+    });
+  });
+
+  window.redrawSim = function(){ render(); };
+
+  return { update: update, render: render, fmt: fmt, setLang: function(){ document.getElementById('btnPause').textContent = run ? (curLang==='ar'?'إيقاف':'Pause') : (curLang==='ar'?'تشغيل':'Play'); } };
+})();
+sim.update();
+
+/* hero canvas */
+(function(){
+  var c = document.getElementById('heroCanvas');
+  var ctx = c.getContext('2d');
+  var W = c.width, H = c.height;
+  var len = 220, t = Math.random() * 40;
+  function loop(){
+    var data = makeSpectrum(len, 'full', t);
+    ctx.clearRect(0, 0, W, H);
+    drawSpectrumLine(ctx, W, H, data, 0);
+    drawWaterfall(ctx, W, H, data, 'full', t);
+    t += 0.055;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ================= Gallery ================= */
+var GALLERY = [
+  { src: 'assets/main-picture-spectrum.png', en: 'Main spectrum view', ar: 'عرض الطيف الرئيسي' },
+  { src: 'assets/s1.png', en: 'Arabic interface (RTL)', ar: 'الواجهة العربية (RTL)' },
+  { src: 'assets/s2.png', en: 'Power meter view', ar: 'عرض مقياس القدرة' },
+  { src: 'assets/s3.png', en: 'Delta markers & measurement', ar: 'علامات الفرق والقياس' },
+  { src: 'assets/s5.png', en: 'Spectrogram with 27 palettes', ar: 'المطياف مع 27 لوحة ألوان' },
+  { src: 'assets/s6.png', en: 'Wideband spectrum sweep', ar: 'مسح الطيف واسع النطاق' }
+];
+var galIndex = 0, galImg = document.getElementById('galImg'), dots = document.getElementById('carDots');
+GALLERY.forEach(function(_, i){
+  var b = document.createElement('button');
+  b.addEventListener('click', function(){ galIndex = i; showGal(); });
+  dots.appendChild(b);
+});
+function renderCaption(){ document.getElementById('galCap').textContent = GALLERY[galIndex][curLang]; }
+function showGal(){
+  galImg.src = GALLERY[galIndex].src;
+  renderCaption();
+  Array.prototype.forEach.call(dots.children, function(d, i){ d.classList.toggle('active', i === galIndex); });
+  galImg.style.animation = 'none'; void galImg.offsetWidth; galImg.style.animation = '';
+}
+document.getElementById('prevBtn').addEventListener('click', function(){ galIndex = (galIndex + GALLERY.length - 1) % GALLERY.length; showGal(); });
+document.getElementById('nextBtn').addEventListener('click', function(){ galIndex = (galIndex + 1) % GALLERY.length; showGal(); });
+document.addEventListener('keydown', function(e){ if(e.key === 'ArrowLeft'){ galIndex = (galIndex + GALLERY.length - 1) % GALLERY.length; showGal(); } if(e.key === 'ArrowRight'){ galIndex = (galIndex + 1) % GALLERY.length; showGal(); } });
+showGal();
+
+applyLang('en');
+</script>
+</body>
+</html>
