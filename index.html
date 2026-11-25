@@ -7,7 +7,7 @@
     <link rel="icon" href="assets/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* بداية منع النسخ */
         body {
@@ -46,63 +46,177 @@
         [dir="rtl"] .feature-list li:before { right: 0; left: auto; }
         [dir="ltr"] .feature-list li:before { left: 0; right: auto; }
         
+        /* ============================================================
+           PRINT — A4 brochure
+           Goal: every printed section is complete, nothing is clipped,
+           no blank pages, no half-cut cards/tables.
+           ============================================================ */
         @media print {
-            @page { size: A4; margin: 1.2cm; }
-            body { background: white; color: black; font-size: 9pt; line-height: 1.2; }
-            .no-print, nav, .sticky, button, .lang-toggle, .carousel-button, .carousel-dots, #simulator, .audio-control, #audioBtn, .mode-buttons, .carousel-container { display: none !important; }
-            .bg-card, .bg-dark, .bg-slate-950, .bg-slate-900, .feature-card { background: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; page-break-inside: avoid; break-inside: avoid; }
-            .border-border, .border { border: 1px solid #ccc !important; }
-            .text-slate-400, .text-slate-300 { color: #444 !important; }
-            .text-primary, .text-accent, .text-amber { color: #2c3e50 !important; }
-            .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .table-container, .feature-card, .importance-card { page-break-inside: avoid; break-inside: avoid; }
-            table { page-break-inside: avoid; break-inside: avoid; }
-            .gradient-text { color: #2c3e50 !important; background: none !important; }
-            .hero-image, .hardware-image { max-height: 180px; object-fit: contain; }
-            .page-break-before { page-break-before: always; }
-            .cover-section { page-break-after: avoid; }
-            
-            /* تحسينات لقسم الأهمية لضمان بقاء الجدول + البطاقات في صفحة واحدة */
-            .importance-section {
-                page-break-before: always;
-                page-break-inside: avoid;
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
+            @page {
+                size: A4 portrait;
+                margin: 12mm 12mm 14mm;
             }
-            .importance-section .importance-card .p-6 {
-                padding: 0.4rem 0.6rem !important;
+
+            /*颜色: keep the dark brochure look on paper when the printer allows it */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
-            .importance-section .importance-card p {
-                font-size: 10.5pt;
-                line-height: 1.3;
+
+            html, body {
+                background: #ffffff !important;
+                color: #111827 !important;
+                font-family: 'Inter', 'Noto Sans Arabic', Arial, sans-serif !important;
+                font-size: 8.6pt !important;
+                line-height: 1.25 !important;
+                width: auto !important;
+                height: auto !important;
+                overflow: visible !important;
             }
-            .importance-table td, .importance-table th {
-                font-size: 9.5pt;
-                padding: 3px 6px;
+            html[lang="ar"] body, html[dir="rtl"] body {
+                font-family: 'Noto Sans Arabic', Arial, sans-serif !important;
             }
-            .importance-table {
-                margin-bottom: 0.5rem;
+
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-user-select: auto !important;
+                user-select: auto !important;
             }
-            
-            #benefitsGrid {
-                page-break-inside: avoid;
-                break-inside: avoid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 5px;
+
+            /* Remove everything that belongs to the interactive web experience */
+            .no-print, nav, .sticky, button, .lang-toggle, .carousel-button,
+            .carousel-dots, #simulator, #carousel, .audio-control, #audioBtn,
+            .mode-buttons, .carousel-container, iframe, input, select,
+            .bg-gradient-to-r.h-1, #simulator * {
+                display: none !important;
             }
-            #benefitsGrid .bg-card {
-                font-size: 9.5pt;
-                padding: 0.3rem 0.4rem;
+
+            /* Printable surfaces: white cards with a light border, no shadows */
+            .bg-card, .bg-dark, .bg-dark\/50, .bg-slate-950, .bg-slate-950\/40,
+            .bg-slate-900, .bg-black\/50, .feature-card, .importance-card,
+            .glow-card, .gallery-card {
+                background: #ffffff !important;
+                color: #111827 !important;
+                border: 1px solid #c7ced8 !important;
+                box-shadow: none !important;
+                backdrop-filter: none !important;
             }
-            #benefitsGrid .bg-card p {
-                font-size: 9pt;
+            .bg-gradient-to-r, .bg-primary\/10, .bg-primary\/20,
+            .bg-accent\/10, .bg-accent\/20, .bg-primary\/5 {
+                background: #f3f6fa !important;
             }
-            #benefitsGrid .bg-card h4 {
-                font-size: 10.5pt;
+            .border-border, .border, .border-t, .border-b, [class*="border-"] {
+                border-color: #c7ced8 !important;
             }
-            
-            .hardware-section { page-break-before: always; }
-            .specs-section { page-break-before: always; }
+            .text-slate-400, .text-slate-300, .text-slate-500, .text-white\/50,
+            .text-white\/60, .text-white\/65, .text-slate-200 {
+                color: #374151 !important;
+            }
+            .text-primary, .text-accent, .text-amber, .text-emerald-300,
+            .text-white, .text-black {
+                color: #111827 !important;
+            }
+            .gradient-text {
+                background: none !important;
+                -webkit-text-fill-color: #111827 !important;
+                color: #111827 !important;
+            }
+
+            /* Kill screen-only motion/effects that break print layout */
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+                transform: none !important;
+                box-shadow: none !important;
+                text-shadow: none !important;
+            }
+
+            /* Sections flow naturally — no forced page breaks anywhere */
+            section, footer, .page-break-before, .importance-section,
+            .hardware-section, .specs-section, .cover-section {
+                page-break-before: auto !important;
+                break-before: auto !important;
+                page-break-after: auto !important;
+                break-after: auto !important;
+                padding-top: 6mm !important;
+                padding-bottom: 6mm !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+
+            section {
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+
+            /* Small units stay together; big grids/tables may flow across pages */
+            .feature-card, .importance-card, .glow-card, .table-container > div,
+            #benefitsGrid > div, tr, .gallery-card, h1, h2, h3, h4 {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Keep a heading with the content that follows it */
+            h1, h2, h3, h4 {
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+            }
+
+            /* Two columns everywhere on paper — fits A4 width cleanly */
+            .grid, .lg\:grid-cols-2, .lg\:grid-cols-3, .lg\:grid-cols-4,
+            .md\:grid-cols-2, .md\:grid-cols-3, #featuresGrid, #advancedGrid,
+            #benefitsGrid, .cover-section .grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 4mm !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            #benefitsGrid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+
+            /* Compact type + padding so all content fits without clipping */
+            .p-5, .p-6, .px-6, .py-3 { padding: 2.5mm 3mm !important; }
+            .mb-4, .mb-6, .mb-8, .mb-10, .mt-2, .mt-3, .mt-6, .mt-8, .space-y-6 > * + * {
+                margin-top: 2mm !important;
+                margin-bottom: 2mm !important;
+            }
+            .text-3xl { font-size: 15pt !important; }
+            .text-2xl { font-size: 12pt !important; }
+            .text-xl { font-size: 11pt !important; }
+            .text-base { font-size: 9.5pt !important; }
+            .text-sm, .text-xs, .text-\[10px\] { font-size: 8.2pt !important; }
+            h1 { font-size: 22pt !important; }
+
+            /* Tables: full width, wrap text instead of horizontal scrolling */
+            .overflow-x-auto { overflow: visible !important; }
+            table { width: 100% !important; table-layout: fixed !important; }
+            th, td {
+                font-size: 8pt !important;
+                padding: 1.5mm 2mm !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                vertical-align: top !important;
+            }
+            thead { display: table-header-group !important; }
+            tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+
+            /* Images never overflow the printable area */
+            img, .hero-image, .hardware-image, .gallery-img {
+                max-width: 100% !important;
+                max-height: 42mm !important;
+                height: auto !important;
+                object-fit: contain !important;
+                padding: 0 !important;
+            }
+            img[src*="favicon"] { display: none !important; }
+
+            /* Feature lists print fully — never truncate with ellipsis */
+            .feature-list li { font-size: 8pt !important; line-height: 1.3 !important; }
+            .ltr-text, .value-unit { font-size: 8pt !important; }
+
+            footer { text-align: center !important; }
+            footer .font-mono { font-size: 7.5pt !important; }
         }
         body { background: #0a0c15; color: #eef2ff; font-family: 'Inter', sans-serif; }
         .hero-image { width: 100%; border-radius: 0; object-fit: contain; max-height: 550px; background: transparent; }
@@ -376,7 +490,12 @@
                 ["⚡","Professional Power Meter",["Units: dBm and Watt (full decimal)","Measurement modes: Low Power, Average (Channel Power), High Power","Detectors: RMS, Average, Peak","External attenuator compensation: <span class='ltr-text'>0 – 120 dB</span>","Path loss compensation: <span class='ltr-text'>0 – 80 dB</span>","External offset: <span class='ltr-text'>±40 dB</span>","Multi-point frequency calibration: List of (freq, offset), linear interpolation, configurable apply range","Guided calibration: Builds frequency list, steps through each frequency with capture prompt (semi-automatic)","Auto calibration: Works with sweeping signal generator; tracks peaks within tolerance window, optional clear old points","Channel Power: Calculated using ENBW factor (default <span class='ltr-text'>1.06</span>, adjustable <span class='ltr-text'>0.8 – 3.0</span>)","SNR: Calculated from peak minus noise floor (<span class='ltr-text'>20th</span> percentile)","Uncertainty estimation: Based on variance, attenuation, SNR, and signal level","Save/Load calibration file: JSON format (points, ENBW, losses, offset, attenuator used)"]],
                 ["🎙️","Live Demodulation",["Modes: FM (<span class='ltr-text'>200 kHz</span> bandwidth), AM (up to <span class='ltr-text'>10 kHz</span>), LSB, USB, CW (<span class='ltr-text'>1.2 kHz</span>)","IQ source: Real-time from HackRF or Pluto (<span class='ltr-text'>2 MHz</span> sample rate for FM, adjustable for other modes)","Audio processing: DC removal, bandpass filters, de‑emphasis (FM), automatic gain control (AGC), light hiss reduction","Audio output: PyAudio or sounddevice, <span class='ltr-text'>48 kHz</span>, <span class='ltr-text'>16-bit</span> int","Volume control: Slider <span class='ltr-text'>0 – 100%</span>","Frequency returning: From double-click on spectrum or waterfall","State reset: Internal filters reset automatically on frequency or mode change"]],
                 ["💾","IQ Recorder / Player / Transmitter",["Formats: SigMF CS8 (<span class='ltr-text'>.sigmf-data + .sigmf-meta</span>, int8) – Tx ready, SigMF C16 (<span class='ltr-text'>.sigmf-data + .sigmf-meta</span>, int16), Complex Float32 (<span class='ltr-text'>.cf32 + .json</span>, float32), Complex Int16 (<span class='ltr-text'>.sc16 + .json</span>, int16)","Recording features: Max duration limit (seconds, <span class='ltr-text'>0</span> = unlimited), Max file size limit (MB, <span class='ltr-text'>0</span> = unlimited), Write metadata (SigMF sidecar or JSON), Narrowband preview during recording, Auto-resume sweep after recording, Real-time statistics (duration, size, queue depth)","Playback features: Open IQ file (.sigmf-data or .cf32), Display spectrum during playback (as live), Loop mode, Stop playback and auto-resume sweep","Transmit features: Transmit IQ files (ci8 only) via HackRF or Pluto, Set transmit frequency and gain (<span class='ltr-text'>0-47 dB</span> for HackRF, mapped to attenuation for Pluto), Loop mode"]],
-                ["🎯","Markers & User Interface",["Max <span class='ltr-text'>8</span> markers, Types: Standard (solid line), Peak (solid above peak, dashed below)","Delta reference: Set any marker as reference; others show frequency difference","Customizable colors via color picker, Rename markers","Add manual marker: From context menu or 'Add Cursor' button","Add peak marker: From 'Add Peak' button (cycles through detected peaks)","Remove marker: 'Remove' button or Delete key, Clear all: 'Clear All' button","Dropdown list: Shows marker names and frequencies","Instant language toggle: English ↔ Arabic (all UI strings update)","Show/hide modules: Waterfall, Demodulator, IQ Recorder, Power Meter ('Quick Features' panel)","Frequency info bar: Shows start, center, stop, span, with 'Features' and 'Hide' buttons","Hide side panel button: Collapses/expands settings panel","About dialog: Popup with version, developer, copyright","Screenshot: Captures both spectrum and waterfall together as PNG","Save/Load all settings: Single JSON file (device, display, demodulator, IQ recorder, markers, calibration)","Reset to defaults: One-click button","Capture folder selection: For screenshots and IQ recordings"]]
+                ["🎯","Markers & User Interface",["Max <span class='ltr-text'>8</span> markers, Types: Standard (solid line), Peak (solid above peak, dashed below)","Delta reference: Set any marker as reference; others show frequency difference","Customizable colors via color picker, Rename markers","Add manual marker: From context menu or 'Add Cursor' button","Add peak marker: From 'Add Peak' button (cycles through detected peaks)","Remove marker: 'Remove' button or Delete key, Clear all: 'Clear All' button","Dropdown list: Shows marker names and frequencies","Instant language toggle: English ↔ Arabic (all UI strings update)","Show/hide modules: Waterfall, Demodulator, IQ Recorder, Power Meter ('Quick Features' panel)","Frequency info bar: Shows start, center, stop, span, with 'Features' and 'Hide' buttons","Hide side panel button: Collapses/expands settings panel","About dialog: Popup with version, developer, copyright","Screenshot: Captures both spectrum and waterfall together as PNG","Save/Load all settings: Single JSON file (device, display, demodulator, IQ recorder, markers, calibration)","Reset to defaults: One-click button","Capture folder selection: For screenshots and IQ recordings"]],
+                ["⏱️","Zero Span (صفر سبان)",["Time-domain amplitude view at <span class='ltr-text'>0 Hz</span> span — tracks power versus time at a fixed tuned frequency","Continuous / single sweep modes, max-hold trace and auto-scale","Adjustable RBW (عرض المجال), sweep time and IQ rate; LNA / VGA / RX gain controls","FM deviation readout, optional DC removal (AC-couple)","Click-to-place markers, peak markers, measurements: Peak / Min / Avg / PK-PK / Last","Restores the main scan automatically after closing the window"]],
+                ["📈","Live Measurements (CHP / OBW)",["Channel Power (CHP) and Occupied Bandwidth (OBW) computed from the live trace","Noise-floor estimation (20th percentile) and peak classification for band labels","Min Hold, Average Hold and Reset Holds for comparative measurements","Live band labels directly on the spectrum display"]],
+                ["🗺️","Band Presets & Bookmarks",["<span class='ltr-text'>17</span> ready operational presets: FM Broadcast, Airband VHF, VHF/UHF Ham, GSM 900, GPS / GNSS L1, LTE, UMTS, ISM / Wi‑Fi <span class='ltr-text'>2.4 / 5 GHz</span>, Drone <span class='ltr-text'>2.4 / 5.8 GHz</span>, 5G n77/n78 and wide VHF–UHF / 1–6 GHz","One-click apply to the current sweep span, with span clamping to device limits","Bookmarks: save the current span, quick navigation, rename/delete","Smart Monitor interest scan lists: Current Span, Drone 2.4+5.8, Wi‑Fi 2.4+5, Cellular Hotspots, ISM + GPS"]],
+                ["🤖","Smart Monitor (المراقبة الذكية)",["Round-the-clock monitoring of the selected band — fully automatic","Signals above the threshold are logged, alarmed, marked on the chart, screenshotted and optionally recorded as short video clips","Automatic threshold (noise + offset) with adjustable margin","Detection threshold, minimum separation, hold margin and grace time controls","Professional signal report with classification, bandwidth, SNR, statistics and CSV export","Interest scan lists for multi-band monitoring"]],
+                ["📶","Web Remote Server & Touch UI",["WebSocket + HTTP server for live spectrum, status and commands from any browser on the LAN","Local IP list with auto detection, pinned IP, status readout and copy-URL button","On-screen numeric keypad for touch devices, touch scrolling and wide scrollbars","Marathon-ready: bring your own tablet or laptop — no extra software needed"]]
             ],
             ar: [
                 ["📡","مسح الطيف",["مدى الترددات: <span class='ltr-text'>1 MHz – 7.25 GHz</span> (HackRF One) / <span class='ltr-text'>70 – 6000 MHz</span> (ADALM-Pluto مع البرنامج الثابت الموسع)","عرض الحزمة اللحظي: حتى <span class='ltr-text'>20 MHz</span> (HackRF) / حتى <span class='ltr-text'>56 MHz</span> (Pluto)","خيارات RBW: <span class='ltr-text'>1k, 2k, 5k, 10k, 20k, 50k, 100k, 200k, 500k, 1M, 2M, 5M Hz</span>","نقاط FFT: <span class='ltr-text'>8,192 / 16,384 / 32,768 / 65,536 / 131,072 / 262,144</span>","أنماط الكاشف في مقياس الاستطاعة: RMS، Average، Peak","تتبع الذروة: نعم، مع معدل هبوط قابل للضبط <span class='ltr-text'>0 – 500 ms</span>","مرشح الشوائب التوافقية: نعم، يتعلم ويزيل التوافقيات ذات التباعد <span class='ltr-text'>40 MHz</span> (حساس لربح الجهاز، ويحفظ ملفات تعريف لكل ربح)","إعادة معايرة المرشح: زر مخصص لتعليم المرشح من جديد","وضع التصحيح: يعرض معلومات إضافية عن المرشح"]],
@@ -384,7 +503,12 @@
                 ["⚡","مقياس الاستطاعة الاحترافي",["الوحدات: dBm و Watt (عشرية كاملة)","أنماط القياس: استطاعة منخفضة، استطاعة متوسطة (قناة)، استطاعة عالية","الكاشفات: RMS، Average، Peak","تعويض المخفف الخارجي: <span class='ltr-text'>0 – 120 dB</span>","خسارة الخط: <span class='ltr-text'>0 – 80 dB</span>","إزاحة خارجية: <span class='ltr-text'>±40 dB</span>","معايرة ترددية متعددة النقاط: قائمة (تردد، إزاحة)، استيفاء خطي، مجال تطبيق قابل للتحديد","معايرة إرشادية: تبني قائمة ترددات مع الانتقال والمسح والتقاط (شبه تلقائي)","معايرة آلية: تعمل مع مولد إشارة متغير التردد (sweep)، تلتقط القمم المطابقة للخطوة مع نافذة تتبع","قدرة القناة: تحسب باستخدام عامل ENBW (<span class='ltr-text'>1.06</span> افتراضياً، قابل للتعديل <span class='ltr-text'>0.8 – 3.0</span>)","نسبة الإشارة إلى الضجيج (SNR): تحسب من الفرق بين القمة ومستوى الضجيج (النسبة المئوية <span class='ltr-text'>20</span>)","تقدير عدم اليقين: بناءً على التباين، التوهين، نسبة SNR، ومستوى الإشارة","حفظ وتحميل ملف المعايرة بصيغة JSON (يتضمن النقاط، ENBW، الخسائر، الإزاحة، التوهين المستخدم)"]],
                 ["🎙️","فك التعديل الحي",["الأنماط: FM (عرض <span class='ltr-text'>200 kHz</span>)، AM (حتى <span class='ltr-text'>10 kHz</span>)، LSB، USB، CW (<span class='ltr-text'>1.2 kHz</span>)","مصدر الإشارة: مستقبل IQ حقيقي من HackRF أو Pluto (معدل عينة <span class='ltr-text'>2 MHz</span> لـ FM، وقابل للتعديل للأنماط الأخرى)","معالجة الصوت: إزالة DC، مرشحات تمرير مجال، دي-إمفاسيس (FM)، ربح تلقائي (AGC)، إلغاء تشويش خفيف","مخرجات الصوت: PyAudio أو sounddevice، <span class='ltr-text'>48 kHz</span>، <span class='ltr-text'>16-bit</span> int","مستوى الصوت: شريط تحكم <span class='ltr-text'>0 – 100%</span>","إعادة توجيه التردد: من نقر مزدوج على الطيف أو الشلال","إعادة ضبط الحالة: عند تغيير التردد أو النمط، تُعاد ضبط مرشحات الحالة الداخلية تلقائياً"]],
                 ["💾","تسجيل وإعادة تشغيل IQ",["صيغ التسجيل: SigMF CS8 (<span class='ltr-text'>.sigmf-data + .sigmf-meta</span>, int8) – مناسب للإرسال، SigMF C16 (<span class='ltr-text'>.sigmf-data + .sigmf-meta</span>, int16)، Complex Float32 (<span class='ltr-text'>.cf32 + .json</span>, float32)، Complex Int16 (<span class='ltr-text'>.sc16 + .json</span>, int16)","ميزات التسجيل: تحديد أقصى مدة/حجم للملف، كتابة بيانات وصفية (SigMF sidecar أو JSON)، معاينة ضيقة أثناء التسجيل، استئناف المسح تلقائياً بعد التسجيل، إحصائيات لحظية (المدة، الحجم، عمق الطابور)","ميزات إعادة التشغيل: فتح ملف IQ (.sigmf-data أو .cf32)، عرض الطيف أثناء التشغيل، وضع تكرار (loop)، إيقاف التشغيل واستئناف المسح","ميزات الإرسال (Tx): إرسال ملفات IQ (ci8 فقط) عبر HackRF أو Pluto، تحديد تردد الإرسال وربح الإرسال (<span class='ltr-text'>0-47 dB</span> لـ HackRF، يترجم إلى تخفيف لـ Pluto)، وضع تكرار"]],
-                ["🎯","المؤشرات وواجهة المستخدم",["المؤشرات: حتى <span class='ltr-text'>8</span> مؤشرات، أنواع: قياسية (خط متصل)، ذروة (خط متصل فوق الذروة ومتقطع تحتها)","مرجع دلتا: تعيين أي علامة كمرجع؛ تعرض المؤشرات الأخرى فرق التردد","ألوان قابلة للتخصيص عبر منتقي الألوان، إعادة تسمية المؤشرات","إضافة علامة يدوية: من قائمة النقر الأيمن أو زر Add Cursor","إضافة علامة ذروة: من زر Add Peak (يتنقل عبر القمم المكتشفة)","إزالة علامة: زر Remove أو مفتاح Delete، مسح الكل: Clear All","قائمة منسدلة للمؤشرات: تعرض أسماء المؤشرات والترددات","التبديل الفوري بين العربية والإنجليزية: جميع النصوص تترجم (أزرار، مؤشرات تبويب، تسميات)","إظهار/إخفاء الوحدات: Waterfall، Demodulator، IQ Recorder، Power Meter (قائمة Quick Features)","شريط معلومات علوي: يعرض بداية، مركز، نهاية، والامتداد الترددي، مع زر Features و Hide","زر إخفاء لوحة التحكم الجانبية: يطوي/يفتح لوحة الإعدادات","نافذة معلومات: نافذة منبثقة تعرض الإصدار، المطور، حقوق النشر","لقطة شاشة: تلتقط كلاً من الطيف والشلال معاً وتحفظ كـ PNG","حفظ وتحميل جميع الإعدادات: ملف JSON واحد (الجهاز، العرض، فك التعديل، مسجل IQ، المؤشرات، المعايرة)","زر إعادة الضبط الافتراضي: يعيد كل شيء إلى حالته الأصلية","تحديد مجلد الالتقاط: لحفظ لقطات الشاشة وتسجيلات IQ"]]
+                ["🎯","المؤشرات وواجهة المستخدم",["المؤشرات: حتى <span class='ltr-text'>8</span> مؤشرات، أنواع: قياسية (خط متصل)، ذروة (خط متصل فوق الذروة ومتقطع تحتها)","مرجع دلتا: تعيين أي علامة كمرجع؛ تعرض المؤشرات الأخرى فرق التردد","ألوان قابلة للتخصيص عبر منتقي الألوان، إعادة تسمية المؤشرات","إضافة علامة يدوية: من قائمة النقر الأيمن أو زر Add Cursor","إضافة علامة ذروة: من زر Add Peak (يتنقل عبر القمم المكتشفة)","إزالة علامة: زر Remove أو مفتاح Delete، مسح الكل: Clear All","قائمة منسدلة للمؤشرات: تعرض أسماء المؤشرات والترددات","التبديل الفوري بين العربية والإنجليزية: جميع النصوص تترجم (أزرار، مؤشرات تبويب، تسميات)","إظهار/إخفاء الوحدات: Waterfall، Demodulator، IQ Recorder، Power Meter (قائمة Quick Features)","شريط معلومات علوي: يعرض بداية، مركز، نهاية، والامتداد الترددي، مع زر Features و Hide","زر إخفاء لوحة التحكم الجانبية: يطوي/يفتح لوحة الإعدادات","نافذة معلومات: نافذة منبثقة تعرض الإصدار، المطور، حقوق النشر","لقطة شاشة: تلتقط كلاً من الطيف والشلال معاً وتحفظ كـ PNG","حفظ وتحميل جميع الإعدادات: ملف JSON واحد (الجهاز، العرض، فك التعديل، مسجل IQ، المؤشرات، المعايرة)","زر إعادة الضبط الافتراضي: يعيد كل شيء إلى حالته الأصلية","تحديد مجلد الالتقاط: لحفظ لقطات الشاشة وتسجيلات IQ"]],
+                ["⏱️","صفر سبان (Zero Span)",["عرض زمني للاستطاعة بانحراف <span class='ltr-text'>0 Hz</span> — يتتبع الاستطاعة مقابل الزمن عند تردد مضبوط ثابت","وضعان: مستمر ومسح واحد، مع أثر الاحتفاظ الأقصى ومقياس تلقائي","عرض المجال (RBW) وزمن المسح ومعدل IQ قابلة للضبط، مع تحكم LNA / VGA / ربح RX","قراءة انحراف التردد (FM)، وإزالة التيار المستمر اختيارياً (اقتران AC)","علامات بالنقر على الرسم، علامات ذروة، وقياسات: ذروة / أدنى / متوسط / قمة-قمة / أخير","يعيد تشغيل المسح الرئيسي تلقائياً بعد إغلاق النافذة"]],
+                ["📈","قياسات حية (استطاعة القناة / عرض مشغول)",["حساب استطاعة القناة (CHP) والعرض المشغول (OBW) من الأثر الحي","تقدير أرضية الضجيج (النسبة المئوية <span class='ltr-text'>20</span>) وتصنيف القمم لتسميات النطاقات","أدنى احتفاظ، متوسط الاحتفاظ، وإعادة ضبط الاحتفاظ","تسميات نطاقات حية مباشرة على شاشة الطيف"]],
+                ["🗺️","النطاقات الجاهزة والإشارات المحفوظة",["<span class='ltr-text'>17</span> نطاقاً جاهزاً: بث FM، طيران VHF، هواة 2م/70سم، GSM 900، GPS / GNSS L1، LTE، UMTS، ISM / Wi‑Fi <span class='ltr-text'>2.4 / 5 GHz</span>، طائرات <span class='ltr-text'>2.4 / 5.8 GHz</span>، 5G n77/n78، وواسع VHF–UHF / 1–6 GHz","تطبيق بنقرة واحدة على المجال الحالي مع تحديد المجال ضمن حدود الجهاز","الإشارات المحفوظة (Bookmarks): حفظ المجال الحالي، تنقل سريع، إعادة تسمية/حذف","قوائم مسح المراقبة الذكية: النطاق الحالي فقط، طائرات 2.4 + 5.8، Wi‑Fi 2.4 + 5، نقاط خلوية، ISM + GPS"]],
+                ["🤖","المراقبة الذكية (Smart Monitor)",["مراقبة النطاق المحدد على مدار الساعة — تلقائياً بالكامل","الإشارات فوق العتبة تُسجَّل في اللوغ وتطلق إنذاراً وتُعلَّم على الرسم وتُلتقط لها صور وتسجل مقاطع فيديو قصيرة","عتبة تلقائية (ضجيج + هامش) مع هامش قابل للضبط","التحكم بعتبة الكشف، أدنى مسافة بين الإشارات، هامش الثبات، والمهلة بعد انتهاء الإشارة","تقرير إشارة احترافي يتضمن التصنيف، عرض المجال، SNR، الإحصائيات، وتصدير CSV","قوائم مسح متعددة النطاقات للمراقبة الذكية"]],
+                ["📶","خادم الويب والتحكم باللمس",["خادم WebSocket + HTTP لعرض الطيف والحالة وإرسال الأوامر من أي متصفح على الشبكة المحلية","قائمة عناوين IP المحلية مع كشف تلقائي، عنوان مثبّت، عرض الحالة، وزر نسخ الرابط","لوحة مفاتيح رقمية على الشاشة للأجهزة التي تعمل باللمس، وتمرير لمسي إشارات تمرير عريضة","جاهز للعمل الطويل: استخدم الجهاز اللوحي أو الحاسوب المحمول دون برمجيات إضافية"]]
             ]
         };
         
@@ -443,9 +567,9 @@
 
         const translations = {
             en: {
-                heroBadge: "SpectroX · Real‑time spectrum analyzer with spectrogram & power meter and IQ sample recording",
-                heroTitle1: "Professional RF", heroTitle2: "Spectrum Analyzer", heroTitle3: "Gold Edition",
-                heroDesc: "High‑performance hardware‑accelerated platform for real‑time radio frequency signal analysis, capture, and visualization. Supports HackRF One and ADALM-Pluto with PyQt6 GPU engine. 27 waterfall palettes, professional power meter, SigMF recording, and live demodulation.",
+                heroBadge: "SpectroX · GOLD v2026.6 · Real‑time spectrum analyzer with spectrogram, power meter, zero span, smart monitor and IQ recording",
+                heroTitle1: "Professional RF", heroTitle2: "Spectrum Analyzer", heroTitle3: "Gold Edition v90",
+                heroDesc: "High‑performance hardware‑accelerated platform for real‑time radio frequency signal analysis, capture, and visualization. Supports HackRF One and ADALM-Pluto with PyQt6 GPU engine. 27 waterfall palettes, professional power meter, SigMF recording, live demodulation, Zero Span (صفر سبان), live measurements, band presets, smart monitoring and web remote control.",
                 btnSim: "🎮 Live Simulator", btnGallery: "📸 Gallery", btnSpec: "⚙️ Full Specs",
                 importanceTag: "ACADEMIC & RESEARCH VALUE",
                 importanceTitle: "Advanced RF spectrum analysis platform combining lab‑grade precision with ease of use",
@@ -454,7 +578,7 @@
                 applicationsTitle: "Some Engineering Applications",
                 appFieldHeader: "Academic / Laboratory Discipline", appImplHeader: "Practical Implementations Within the Platform",
                 hardwareTag: "analysis modes", hardwareTitle: "SpectroX Analysis Modes",
-                hardwareSub: "Wideband RF sweeping and precision power measurement — one platform, two essential workflows",
+                hardwareSub: "Wideband sweeping, precision power measurement and zero-span time-domain view — one platform, three essential workflows",
                 mobileTitle: "Wideband Sweep", mobileSub: "Full-range 1 MHz – 7.25 GHz · High-resolution FFT · Real-time waterfall",
                 mobileDesc: "Wideband RF sweeping across the full operating range with selectable FFT resolution — ideal for spectrum monitoring, frequency-occupancy studies, and interference hunting.",
                 mobileBattery: "1 MHz – 7.25 GHz", mobileStorage: "Span up to 56 MHz", mobileSync: "27 color palettes",
@@ -472,8 +596,8 @@
                 ctrlTitle: "Front‑End Config", sdrLabel: "Active SDR Engine", paletteLabel: "Waterfall Palette (27)",
                 spanLabel: "Span (MHz)", floorLabel: "Noise Floor (dBm)",
                 spurLabel: "Spur Filter", peakLabel: "Peak Hold", demodBtnText: "Demo Audio",
-                specTag: "complete specifications", specTitle: "All Features · SpectroX Gold",
-                specSub: "spectrum sweep · 27 waterfall palettes · power meter · IQ recorder · demodulation · markers · hardware control · bilingual UI",
+                specTag: "complete specifications", specTitle: "All Features · SpectroX Gold v90",
+                specSub: "spectrum sweep · 27 waterfall palettes · power meter · zero span · live measurements · band presets · smart monitor · IQ recorder · demodulation · markers · web control · bilingual UI",
                 sysReqTitle: "System Requirements", sysComp: "Component", sysMin: "Minimum", sysRec: "Recommended",
                 compareTitle: "HackRF One vs ADALM‑Pluto — Hardware Comparison",
                 compFeature: "Feature", compHack: "HackRF One", compPluto: "ADALM‑Pluto",
@@ -485,9 +609,9 @@
                 printBtnText: "Print (A4)"
             },
             ar: {
-                heroBadge: "SpectroX · محلل طيف ترددي لحظي مع شلال ومقياس استطاعة وتسجيل عينات IQ",
-                heroTitle1: "محلل طيف ترددي", heroTitle2: "احترافي", heroTitle3: "الإصدار الذهبي",
-                heroDesc: "منصة عالية الأداء تعتمد على تسريع عتادي لمعالجة الترددات اللاسلكية في الزمن الحقيقي، مع دعم التقاطها وعرضها. تدعم HackRF One وADALM‑Pluto، وتستخدم محرك PyQt6 مع تسريع GPU لواجهة العرض. تتضمن 27 لوحة ألوان للشلال، مقياس استطاعة احترافي، تسجيل SigMF، وفك تعديل حي.",
+                heroBadge: "SpectroX · GOLD v2026.6 · محلل طيف ترددي لحظي مع شلال ومقياس استطاعة وصفر سبان ومراقبة ذكية وتسجيل عينات IQ",
+                heroTitle1: "محلل طيف ترددي", heroTitle2: "احترافي", heroTitle3: "الإصدار الذهبي v90",
+                heroDesc: "منصة عالية الأداء تعتمد على تسريع عتادي لمعالجة الترددات اللاسلكية في الزمن الحقيقي، مع دعم التقاطها وعرضها. تدعم HackRF One وADALM‑Pluto، وتستخدم محرك PyQt6 مع تسريع GPU لواجهة العرض. تتضمن 27 لوحة ألوان للشلال، مقياس استطاعة احترافي، تسجيل SigMF، فك تعديل حي، صفر سبان، قياسات حية، نطاقات جاهزة، مراقبة ذكية، والتحكم عن بُعد عبر الويب.",
                 btnSim: "🎮 المحاكي الحي", btnGallery: "📸 المعرض", btnSpec: "⚙️ المواصفات الكاملة",
                 importanceTag: "القيمة الأكاديمية والبحثية",
                 importanceTitle: "منصة تحليل طيف ترددي متقدمة تجمع بين الدقة المخبرية وسهولة الاستخدام",
@@ -496,7 +620,7 @@
                 applicationsTitle: "بعض من التطبيقات الهندسية",
                 appFieldHeader: "المجال الأكاديمي/المخبري", appImplHeader: "التطبيقات العملية داخل المنصة",
                 hardwareTag: "أنماط التحليل", hardwareTitle: "أنماط تحليل SpectroX",
-                hardwareSub: "مسح راديوي واسع النطاق وقياس استطاعة دقيق — منصة واحدة، سير عملان أساسيان",
+                hardwareSub: "مسح راديوي واسع النطاق، وقياس استطاعة دقيق، وعرض زمني بصفر سبان — منصة واحدة وثلاثة سير عمل أساسية",
                 mobileTitle: "المسح واسع النطاق", mobileSub: "النطاق الكامل 1 MHz – 7.25 GHz · FFT عالي الدقة · شلال لحظي",
                 mobileDesc: "مسح راديوي واسع النطاق عبر كامل النطاق التشغيلي مع دقة FFT قابلة للاختيار — مثالي لمراقبة الطيف ودراسات إشغال الترددات ومطاردة التداخل.",
                 mobileBattery: "1 MHz – 7.25 GHz", mobileStorage: "مدى حتى 56 MHz", mobileSync: "27 لوحة ألوان",
@@ -514,8 +638,8 @@
                 ctrlTitle: "تكوين العتاد", sdrLabel: "عتاد الاستقبال النشط", paletteLabel: "لوحة ألوان الشلال",
                 spanLabel: "المدى (MHz)", floorLabel: "مستوى أرضية الضجيج (dBm)",
                 spurLabel: "مرشح التوافقيات", peakLabel: "تتبع القمم", demodBtnText: "صوت تجريبي",
-                specTag: "المواصفات الكاملة", specTitle: "جميع الميزات · SpectroX الذهبي",
-                specSub: "مسح الطيف · 27 لوحة شلال · مقياس استطاعة · مسجل IQ · فك تعديل · مؤشرات · تحكم بالعتاد · واجهة ثنائية اللغة",
+                specTag: "المواصفات الكاملة", specTitle: "جميع الميزات · SpectroX الذهبي v90",
+                specSub: "مسح الطيف · 27 لوحة شلال · مقياس استطاعة · صفر سبان · قياسات حية · نطاقات جاهزة · مراقبة ذكية · مسجل IQ · فك تعديل · مؤشرات · تحكم بالويب · واجهة ثنائية اللغة",
                 sysReqTitle: "متطلبات النظام", sysComp: "المكون", sysMin: "الحد الأدنى", sysRec: "الموصى به",
                 compareTitle: "HackRF One مقابل ADALM-Pluto — مقارنة العتاد",
                 compFeature: "الميزة", compHack: "HackRF One", compPluto: "ADALM-Pluto",
